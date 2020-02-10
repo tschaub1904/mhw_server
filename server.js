@@ -3,6 +3,7 @@ const app = express();
 import https from 'https';
 import axios from 'axios';
 import fs from 'fs';
+import cors from 'cors';
 
 app.route('/api/:path/:id').get((req, res) => {
   console.log(req.params);
@@ -16,7 +17,7 @@ app.route('/api/:path/:id').get((req, res) => {
     });
 })
 
-app.route('/api/:path').get((req, res) => {
+app.route('/api/:path').get(cors(corsOptions),(req, res) => {
 
   var path = './cache/' + req.params["path"]
   if (fs.existsSync(path)) {
@@ -38,5 +39,12 @@ app.route('/api/:path').get((req, res) => {
       });
   }
 })
+
+var corsOptions = {
+  origin: 'http://example.com',
+  optionsSuccessStatus: 200
+}
+
+app.use(cors(corsOptions))
 
 app.listen(8000, () => { console.log('Server started') });
