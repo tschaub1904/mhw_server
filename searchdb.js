@@ -1,10 +1,47 @@
 import mongodb from 'mongodb'
-import fs from 'fs';
+import fs, { exists } from 'fs';
 const MongoClient = mongodb.MongoClient;
 let dbUrl = "mongodb://localhost:27017/"
 
 MongoClient.connect(dbUrl, (err, db) => {
     if (err) throw err;
+    var searchArray = getCacheData();
+
+    let dbo = db.db("mhwDatabase");
+
+    dbo.collection("search").findOne({}, function (err, result) {
+        if (err) throw err;
+
+        if (result != null) {
+            dbo.collection("search").drop(function (err, delOK) {
+                if (err) throw err + "DELETED";
+                if (delOK) console.log("Collection deleted");
+                dbo.createCollection("search", function (err, res) {
+                    if (err) throw err;
+                    console.log("Collection created!");
+                    dbo.collection("search").insertMany(searchArray, function (err, res) {
+                        if (err) throw err;
+                        console.log("Documents inserted");
+                        db.close();
+                    })
+                });
+            });
+        }
+        else {
+            dbo.createCollection("search", function (err, res) {
+                if (err) throw err;
+                console.log("Collection created!");
+                dbo.collection("search").insertMany(searchArray, function (err, res) {
+                    if (err) throw err;
+                    console.log("Documents inserted");
+                    db.close();
+                })
+            });
+        }
+    });
+})
+
+function getCacheData(){
     var directory = fs.readdirSync("./cache/");
     console.log(directory);
     var searchArray = [];
@@ -17,18 +54,6 @@ MongoClient.connect(dbUrl, (err, db) => {
             searchArray.push(temp);
         });
     });
-    let dbo = db.db("mhwDatabase");
-    dbo.collection("search").drop(function (err, delOK) {
-        if (err) throw err + "DELETED";
-        if (delOK) console.log("Collection deleted");
-        dbo.createCollection("search", function (err, res) {
-            if (err) throw err;
-            console.log("Collection created!");
-            dbo.collection("search").insertMany(searchArray, function (err, res) {
-                if (err) throw err;
-                console.log("Documents inserted");
-                db.close();
-            })
-        });
-    });
-})
+
+    return searchArray;
+}
