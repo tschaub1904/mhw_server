@@ -51,11 +51,11 @@ app.route('/api/search').post(cors(), (req, res) => {
     if (err) throw err;
     var dbo = db.db('mhwDatabase');
     //////////////////////
-    var regex = new RegExp("\\b" + req.body.name + "\\b");
+    var regex = new RegExp("\\b" + req.body.name + "\\b", "i");
     console.log(regex)
     //WIE FUNKTIONIERT DIESE FUCKING REGEX IN JS
     dbo.collection('search').findOne({
-      name: req.body.name
+      name: regex
     }, (err, result) => {
       console.log(result)
       res.send(result);
