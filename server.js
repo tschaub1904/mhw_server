@@ -7,8 +7,7 @@ import cors from 'cors';
 import bodyParser from 'body-parser';
 
 import mongodb from 'mongodb'
-const MongoClient = mongodb.MongoClient;
-let dbUrl = "mongodb://localhost:27017/"
+const MongoClient = new mongodb.MongoClient("mongodb://localhost:27017/", { useUnifiedTopology: true });
 
 app.use(bodyParser.json())
 
@@ -47,21 +46,20 @@ app.route('/api/:path').get(cors(corsOptions), (req, res) => {
 })
 
 app.route('/api/search').post(cors(), (req, res) => {
-  MongoClient.connect(dbUrl, (err, db) => {
+  MongoClient.connect((err, db) => {
     if (err) throw err;
     var dbo = db.db('mhwDatabase');
-    //////////////////////
-    var regex = new RegExp("\\b" + req.body.name + "\\b", "i");
-    console.log(regex)
-    //WIE FUNKTIONIERT DIESE FUCKING REGEX IN JS
-    dbo.collection('search').findOne({
-      name: regex
-    }, (err, result) => {
-      console.log(result)
-      res.send(result);
-      res.end();
-    });
     
+    var regex = new RegExp(`.*${req.body.name}.*`, "i");
+    let query = {
+      name: regex
+    };
+    if (req.body.category)
+      query['category'] = req.body.category;
+    
+    dbo.collection('search').find(query).toArray().then(result => {
+      res.send(result);
+    });
   })
 });
 
