@@ -11,7 +11,7 @@ const MongoClient = new mongodb.MongoClient("mongodb://localhost:27017/", { useU
 
 app.use(bodyParser.json())
 
-app.route('/api/:path/:id').get((req, res) => {
+app.route('/api/:path/:id').get(cors(),(req, res) => {
   console.log(req.params);
   axios.get('https://mhw-db.com/' + req.params["path"] + "/" + req.params["id"])
     .then(response => {
