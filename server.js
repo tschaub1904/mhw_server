@@ -11,61 +11,70 @@ const MongoClient = new mongodb.MongoClient("mongodb://localhost:27017/", { useU
 
 app.use(bodyParser.json())
 
-app.route('/api/:path/:id').get(cors(),(req, res) => {
-  let result = retrievePath(req, res);
-  result = result.filter(el => {
-    return el.id == req.params.id;
-  }).pop();
-  res.send(result);
+app.route('/api/:path/:id').get(cors(), (req, res) => {
+  let data = retrievePath(req);
+  data.then(result => {
+    // console.log(result);
+    let ret = result.filter(elem => {
+      return elem.id == req.params.id;
+    });
+
+    res.send(ret.pop());
+  });
 })
 
-app.route('/api/:path').get(cors(corsOptions), (req, res) => {
-  let result = retrievePath(req, res);
-  res.send(result);
+app.route('/api/:path').get(cors(), (req, res) => {
+  let data = retrievePath(req);
+  data.then(result => {
+    res.send(result);
+  });
 })
 
 app.route('/api/search').post(cors(), (req, res) => {
   MongoClient.connect((err, db) => {
     if (err) throw err;
     var dbo = db.db('mhwDatabase');
-    
+
     var regex = new RegExp(`.*${req.body.name}.*`, "i");
     let query = {
       name: regex
     };
     if (req.body.category)
       query['category'] = req.body.category;
-    
+
     dbo.collection('search').find(query).toArray().then(result => {
       res.send(result);
     });
   })
 });
 
-  var corsOptions = {
-    origin: 'http://example.com',
-    optionsSuccessStatus: 200
-  }
-
-  app.use(cors())
-
-  app.listen(8000, () => { console.log('Server started') });
+app.use(cors())
+app.listen(8000, () => { console.log('Server started') });
 
 function retrievePath(req) {
   var path = './cache/' + req.params["path"];
   if (fs.existsSync(path)) {
-    var file = fs.readFileSync(path);
-    file = JSON.parse(file);
-    return file;
+    return new Promise((resolve, reject) => {
+      var file = fs.readFileSync(path);
+      file = JSON.parse(file);
+      if (file) resolve(file);
+      else reject("no file");
+    })
   }
   else {
-    axios.get('https://mhw-db.com/' + req.params["path"])
-      .then(response => {
-        //console.log(response.data);
-        fs.writeFile(path, JSON.stringify(response.data), () => { });
-        return response.data;
-      })
-      .catch(error => {
-      });
+    return new Promise((resolve, reject) => {
+      axios.get('https://mhw-db.com/' + req.params["path"])
+        .then(response => {
+          //console.log(response.data);
+          fs.writeFile(path, JSON.stringify(response.data), () => { });
+
+          if (response.data) resolve(response.data);
+          else reject("NO DATA");
+        })
+        .catch(error => {
+          console.error(error);
+        });
+    });
+
   }
 }
