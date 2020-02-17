@@ -12,37 +12,16 @@ const MongoClient = new mongodb.MongoClient("mongodb://localhost:27017/", { useU
 app.use(bodyParser.json())
 
 app.route('/api/:path/:id').get((req, res) => {
-  console.log(req.params);
-  axios.get('https://mhw-db.com/' + req.params["path"] + "/" + req.params["id"])
-    .then(response => {
-      console.log(response.data);
-      res.send(response.data)
-    })
-    .catch(error => {
-      console.log(error);
-    });
+  let result = retrievePath(req, res);
+  result = result.filter(el => {
+    return el.id == req.params.id;
+  });
+  res.send(result);
 })
 
 app.route('/api/:path').get(cors(corsOptions), (req, res) => {
-
-  var path = './cache/' + req.params["path"]
-  if (fs.existsSync(path)) {
-    var file = fs.readFileSync(path);
-
-    file = JSON.parse(file);
-    res.send(file);
-  }
-  else {
-    axios.get('https://mhw-db.com/' + req.params["path"])
-      .then(response => {
-        //console.log(response.data);
-        fs.writeFile(path, JSON.stringify(response.data), () => { })
-        res.send(response.data);
-      })
-      .catch(error => {
-        //console.log(error);
-      });
-  }
+  let result = retrievePath(req, res);
+  res.send(result);
 })
 
 app.route('/api/search').post(cors(), (req, res) => {
@@ -71,3 +50,22 @@ app.route('/api/search').post(cors(), (req, res) => {
   app.use(cors())
 
   app.listen(8000, () => { console.log('Server started') });
+
+function retrievePath(req) {
+  var path = './cache/' + req.params["path"];
+  if (fs.existsSync(path)) {
+    var file = fs.readFileSync(path);
+    file = JSON.parse(file);
+    return file;
+  }
+  else {
+    axios.get('https://mhw-db.com/' + req.params["path"])
+      .then(response => {
+        //console.log(response.data);
+        fs.writeFile(path, JSON.stringify(response.data), () => { });
+        return response.data;
+      })
+      .catch(error => {
+      });
+  }
+}
