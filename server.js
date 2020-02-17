@@ -11,7 +11,7 @@ const MongoClient = new mongodb.MongoClient("mongodb://localhost:27017/", { useU
 
 app.use(bodyParser.json())
 
-app.route('/api/:path/:id').get((req, res) => {
+app.route('/api/:path/:id').get(cors(),(req, res) => {
   let result = retrievePath(req, res);
   result = result.filter(el => {
     return el.id == req.params.id;
