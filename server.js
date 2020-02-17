@@ -15,7 +15,7 @@ app.route('/api/:path/:id').get(cors(),(req, res) => {
   let result = retrievePath(req, res);
   result = result.filter(el => {
     return el.id == req.params.id;
-  });
+  }).pop();
   res.send(result);
 })
 
