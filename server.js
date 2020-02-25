@@ -51,7 +51,15 @@ app.route('/api/search').post(cors(), (req, res) => {
 });
 
 app.route('/api/images/:path/:file').get(cors(), (req, res) => {
-  res.sendFile(dirname + '/assets/images/' + req.params['path'] + '/' + req.params['file']);
+  if (fs.existsSync(dirname + '/assets/images/' + req.params['path'] + '/' + req.params['file'])) {
+    console.log("Path exists")
+    res.sendFile(dirname + '/assets/images/' + req.params['path'] + '/' + req.params['file']);
+  } else {
+    console.log("Micky Maus")
+
+    res.sendFile(dirname + '/assets/images/' + "default.png");
+
+  }
 });
 
 app.use(cors())
