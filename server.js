@@ -1,6 +1,6 @@
 import express from 'express';
 const app = express();
-import https from 'https';
+import path from 'path';
 import axios from 'axios';
 import fs from 'fs';
 import cors from 'cors';
@@ -8,8 +8,10 @@ import bodyParser from 'body-parser';
 
 import mongodb from 'mongodb'
 const MongoClient = new mongodb.MongoClient("mongodb://localhost:27017/", { useUnifiedTopology: true });
+const dirname = path.resolve();
 
 app.use(bodyParser.json())
+app.use(express.static(dirname))
 
 app.route('/api/:path/:id').get(cors(), (req, res) => {
   let data = retrievePath(req);
@@ -46,6 +48,10 @@ app.route('/api/search').post(cors(), (req, res) => {
       res.send(result);
     });
   })
+});
+
+app.route('/api/images/:path/:file').get(cors(), (req, res) => {
+  res.sendFile(dirname + '/assets/images/' + req.params['path'] + '/' + req.params['file']);
 });
 
 app.use(cors())
