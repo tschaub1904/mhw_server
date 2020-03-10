@@ -13,25 +13,6 @@ const dirname = path.resolve();
 app.use(bodyParser.json())
 app.use(express.static(dirname))
 
-app.route('/api/:path/:id').get(cors(), (req, res) => {
-  let data = retrievePath(req);
-  data.then(result => {
-    // console.log(result);
-    let ret = result.filter(elem => {
-      return elem.id == req.params.id;
-    });
-
-    res.send(ret.pop());
-  });
-})
-
-app.route('/api/:path').get(cors(), (req, res) => {
-  let data = retrievePath(req);
-  data.then(result => {
-    res.send(result);
-  });
-})
-
 app.route('/api/search').post(cors(), (req, res) => {
   MongoClient.connect((err, db) => {
     if (err) throw err;
@@ -50,6 +31,17 @@ app.route('/api/search').post(cors(), (req, res) => {
   })
 });
 
+app.route('/api/itemMonster/:id').get(cors(), (req, res) => {
+  MongoClient.connect((err, db) => {
+    if (err) throw err;
+    var dbo = db.db('mhwDatabase');
+
+    dbo.collection('itemMonster').find({itemId: parseInt(req.params["id"])}).toArray().then(result => {
+      res.send(result);
+    });
+  })
+});
+
 app.route('/api/images/:path/:file').get(cors(), (req, res) => {
   if (fs.existsSync(dirname + '/assets/images/' + req.params['path'] + '/' + req.params['file'])) {
     console.log("Path exists")
@@ -58,9 +50,27 @@ app.route('/api/images/:path/:file').get(cors(), (req, res) => {
     console.log("Micky Maus")
 
     res.sendFile(dirname + '/assets/images/' + "default.png");
-
   }
 });
+
+app.route('/api/:path/:id').get(cors(), (req, res) => {
+  let data = retrievePath(req);
+  data.then(result => {
+    // console.log(result);
+    let ret = result.filter(elem => {
+      return elem.id == req.params.id;
+    });
+
+    res.send(ret.pop());
+  });
+})
+
+app.route('/api/:path').get(cors(), (req, res) => {
+  let data = retrievePath(req);
+  data.then(result => {
+    res.send(result);
+  });
+})
 
 app.use(cors())
 app.listen(8000, () => { console.log('Server started') });
@@ -89,6 +99,5 @@ function retrievePath(req) {
           console.error(error);
         });
     });
-
   }
 }
