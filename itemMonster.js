@@ -52,9 +52,9 @@ function getMonsterData() {
         let monsterId = monster.id;
         let monsterName = monster.name;
         
-        monster.rewards.forEach(item => {
-            getRank(item.conditions).forEach(rank => {
-                let temp = { itemId: item.id, monsterId: monsterId, monsterName: monsterName, rank: rank };
+        monster.rewards.forEach(reward => {
+            getRank(reward.conditions).forEach(rank => {
+                let temp = { itemId: reward.item.id, monsterId: monsterId, monsterName: monsterName, rank: rank };
                 itemMonster.push(temp);
             });
         })
