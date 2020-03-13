@@ -5,9 +5,10 @@ import axios from 'axios';
 import fs from 'fs';
 import cors from 'cors';
 import bodyParser from 'body-parser';
-
 import mongodb from 'mongodb'
-const MongoClient = new mongodb.MongoClient("mongodb://localhost:27017/", { useUnifiedTopology: true });
+import {database} from './config.js';
+
+const MongoClient = new mongodb.MongoClient(database.path, { useUnifiedTopology: true });
 const dirname = path.resolve();
 
 app.use(bodyParser.json())
@@ -16,7 +17,7 @@ app.use(express.static(dirname))
 app.route('/api/search').post(cors(), (req, res) => {
   MongoClient.connect((err, db) => {
     if (err) throw err;
-    var dbo = db.db('mhwDatabase');
+    var dbo = db.db(database.name);
 
     var regex = new RegExp(`.*${req.body.name}.*`, "i");
     let query = {
@@ -34,9 +35,9 @@ app.route('/api/search').post(cors(), (req, res) => {
 app.route('/api/itemMonster/:id').get(cors(), (req, res) => {
   MongoClient.connect((err, db) => {
     if (err) throw err;
-    var dbo = db.db('mhwDatabase');
+    var dbo = db.db(database.name);
 
-    dbo.collection('itemMonster').find({itemId: parseInt(req.params["id"])}).toArray().then(result => {
+    dbo.collection('itemMonster').find({ itemId: parseInt(req.params["id"]) }).toArray().then(result => {
       res.send(result);
     });
   })

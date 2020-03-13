@@ -1,14 +1,14 @@
 import mongodb from 'mongodb'
 import fs, { exists } from 'fs';
 const MongoClient = mongodb.MongoClient;
-let dbUrl = "mongodb://localhost:27017/"
+import {database} from './config.js';
 
-MongoClient.connect(dbUrl, (err, db) => {
+MongoClient.connect(database.path, (err, db) => {
     if (err) throw err;
     var itemMonster = getMonsterData();
     console.log(itemMonster);
 
-    let dbo = db.db("mhwDatabase");
+    let dbo = db.db(database.name);
 
     dbo.collection("itemMonster").findOne({}, function (err, result) {
         if (err) throw err;
